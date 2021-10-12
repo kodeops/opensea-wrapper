@@ -37,11 +37,17 @@ class OpenSea
 
     public function assets($params)
     {
+        if (! isset($params['limit'])) {
+            $params['limit'] = $this->limit;
+        }
         return $this->requestUsingTokenIds('/v1/assets', $params);
     }
 
     public function bundles($params)
     {
+        if (! isset($params['limit'])) {
+            $params['limit'] = $this->limit;
+        }
         return $this->requestUsingTokenIds('/v1/assets', $params);
     }
 
@@ -49,6 +55,9 @@ class OpenSea
     {
         if ($crawl) {
             return $this->crawlAll('events', $params);
+        }
+        if (! isset($params['limit'])) {
+            $params['limit'] = $this->limit;
         }
         return $this->request('/v1/events', $params);
     }
