@@ -1,10 +1,10 @@
 <?php
-namespace kodeops\OpenseaWrapper;
+namespace kodeops\OpenSeaWrapper;
 
 use Illuminate\Support\Facades\Http;
-use kodeops\OpenseaWrapper\Helpers\ConsoleOutput;
-use kodeops\OpenseaWrapper\Model\Event;
-use kodeops\OpenseaWrapper\Events\OpenSeaEventAdded;
+use kodeops\OpenSeaWrapper\Helpers\ConsoleOutput;
+use kodeops\OpenSeaWrapper\Model\Event;
+use kodeops\OpenSeaWrapper\Events\OpenSeaEventAdded;
 
 class OpenSea
 {
@@ -175,6 +175,10 @@ class OpenSea
             }
 
             $combinedResponses = array_merge($combinedResponses, $response[key($response)]);
+
+            if (count($response[key($response)]) < $this->limit) {
+                break;
+            }
 
             sleep($sleep);
             
