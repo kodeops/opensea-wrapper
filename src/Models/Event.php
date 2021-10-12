@@ -1,5 +1,5 @@
 <?php
-namespace kodeops\OpenSeaWrapper\Model;
+namespace kodeops\OpenSeaWrapper\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
@@ -16,7 +16,7 @@ class Event extends Model
 
     public function events()
     {
-        return \kodeops\OpenSeaWrapper\Model\Event::where('token_id', $this->token_id)
+        return \kodeops\OpenSeaWrapper\Models\Event::where('token_id', $this->token_id)
             ->where('asset_contract_address', $this->asset_contract_address);
     }
 
