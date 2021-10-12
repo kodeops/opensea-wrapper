@@ -8,8 +8,6 @@ use kodeops\OpenSeaWrapper\Events\OpenSeaEventAdded;
 
 class OpenSea
 {
-    // The endpoints declared here will be persisted in database
-    const PERSIST_METHODS = ['events'];
     protected $base_url;
     protected $limit;
     protected $consoleOutput;
@@ -20,6 +18,16 @@ class OpenSea
         $this->base_url = 'https://api.opensea.io/api';
         $this->limit = 50;
         $this->consoleOutput = new ConsoleOutput();
+    }
+
+    private function persistEndpoints()
+    {
+        // The endpoints declared in the environment file will be persisted in database
+        if (env('OPENSEA_WRAPPER_PERSIST_ENDPOINTS')) {
+            return explode(',', env('OPENSEA_WRAPPER_PERSIST_ENDPOINTS'));
+        }
+
+        return [];
     }
 
     public function asset($asset_contract_address, $token_id)
@@ -53,7 +61,7 @@ class OpenSea
 
         if (
             // Should we persist the results on database?
-            in_array(explode('/', $endpoint)[2], self::PERSIST_METHODS)
+            in_array(explode('/', $endpoint)[2], $this->persistEndpoints())
             AND
             // There are results in the response?
             count($response->json()[key($response->json())])
