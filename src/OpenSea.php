@@ -3,7 +3,7 @@ namespace kodeops\OpenSeaWrapper;
 
 use Illuminate\Support\Facades\Http;
 use kodeops\OpenSeaWrapper\Helpers\ConsoleOutput;
-use kodeops\OpenSeaWrapper\Model\Event;
+use kodeops\OpenSeaWrapper\Models\Event;
 use kodeops\OpenSeaWrapper\Events\OpenSeaEventAdded;
 
 class OpenSea
