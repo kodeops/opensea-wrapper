@@ -18,7 +18,7 @@
     },
     "autoload": {
         "psr-4": {
-            "kodeops\\OpenseaWrapper\\": "src/"
+            "kodeops\\OpenSeaWrapper\\": "src/"
         }
     },
     "minimum-stability": "dev"

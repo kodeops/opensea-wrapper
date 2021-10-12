@@ -1,5 +1,5 @@
 <?php
-namespace kodeops\OpenseaWrapper\Helpers;
+namespace kodeops\OpenSeaWrapper\Helpers;
 
 use Symfony\Component\Console\Output\ConsoleOutput as SConsoleOutput;
 
