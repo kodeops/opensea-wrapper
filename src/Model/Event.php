@@ -19,4 +19,25 @@ class Event extends Model
         return \kodeops\OpenSeaWrapper\Model\Event::where('token_id', $this->token_id)
             ->where('asset_contract_address', $this->asset_contract_address);
     }
+
+    public function getAssetKey($key)
+    {
+        // Single asset
+        if (! is_null($this->raw['asset'])) {
+            return $this->raw['asset'][$key];
+        }
+
+        // Bundle (Array of assets)
+        if (! is_null($this->raw['asset_bundle'])) {
+            switch ($key) {
+                case 'image_url':
+                    return $this->raw['asset_bundle']['assets'][array_rand($this->raw['asset_bundle']['assets'])]['image_url'];
+                break;
+
+                default:
+                    return $this->raw['asset_bundle'][$key];
+                break;
+            }
+        }
+    }
 }
