@@ -53,13 +53,22 @@ class OpenSea
 
     public function events($params, $crawl = false)
     {
-        if ($crawl) {
-            return $this->crawlAll('events', $params);
+        if (! $crawl) {
+            if (! isset($params['limit'])) {
+                $params['limit'] = $this->limit;
+            }
+
+            return $this->request('/v1/events', $params);
         }
-        if (! isset($params['limit'])) {
-            $params['limit'] = $this->limit;
+        switch ($crawl) {
+            case 'all':
+                return $this->crawlAll('events', $params);
+            break;
+            
+            default:
+                return $this->crawlWithMaxRequests('events', $params, $crawl);
+            break;
         }
-        return $this->request('/v1/events', $params);
     }
 
     public function request($endpoint, $params = [], $query = false)
@@ -165,6 +174,11 @@ class OpenSea
         foreach ($openSeaEvents as $openSeaEvent) {
             self::addEvent($openSeaEvent);
         }
+    }
+
+    public function crawlWithMaxRequests($endpoint, $params, $requests)
+    {
+        return $this->crawl($endpoint, $params, $requests, 0);
     }
 
     public function crawlAll($endpoint, $params)
