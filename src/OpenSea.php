@@ -175,7 +175,7 @@ class OpenSea
 
         OpenSeaEventAdded::dispatch($event);
 
-        $output->info("Adding event #{$event->id}");
+        $output->comment("Adding event #{$event->id}");
 
         return $event;
     }
