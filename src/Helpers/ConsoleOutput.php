@@ -19,4 +19,9 @@ class ConsoleOutput extends SConsoleOutput
     {
         return $this->writeln("<comment>{$message}</comment>");
     }
+
+    public function warn($message)
+    {
+        return $this->writeln("<warn>{$message}</warn>");
+    }
 }
