@@ -78,15 +78,24 @@ class OpenSea
         $query = $query ? $query : http_build_query($params);
         $url = "{$this->base_url}{$endpoint}?{$query}";
         $response = Http::withHeaders($this->getRequestHeaders())->get($url)->throw();
+        $results = $response->json();
+
+        if (in_array('order_by_desc', $this->options)) {
+            $results[key($results)] = collect($results[key($results)])->reverse()->toArray();
+        }
+
+        // Remove the primary key that is included in all OpenSea responses
+        // e.g.: <asset_events>, <assets>, etc.
+        $results = $results[key($results)];
 
         if (
             // Should we persist the results on database?
             in_array(explode('/', $endpoint)[2], $this->persistEndpoints())
             AND
             // There are results in the response?
-            count($response->json()[key($response->json())])
+            count($results)
         ) {
-            self::addEvents($response->json()[key($response->json())]);
+            self::addEvents($results);
         }
 
         return $response;
