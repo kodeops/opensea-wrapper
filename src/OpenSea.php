@@ -155,7 +155,6 @@ class OpenSea
         $event = Event::create([
             'asset_contract_address' => is_null($openSeaEvent['asset']) ? null : $openSeaEvent['asset']['asset_contract']['address'],
             'token_id' => is_null($openSeaEvent['asset']) ? null : $openSeaEvent['asset']['token_id'],
-            'asset_id' => is_null($openSeaEvent['asset']) ? null : $openSeaEvent['asset']['id'],
             'event_id' => $openSeaEvent['id'],
             'event_type' => $openSeaEvent['event_type'],
             'raw' => $openSeaEvent,
