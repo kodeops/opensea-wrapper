@@ -10,11 +10,13 @@ class OpenSea
 {
     protected $base_url;
     protected $limit;
+    protected $options;
     protected $consoleOutput;
 
-    public function __construct()
+    public function __construct($options = [])
     {
         // https://docs.opensea.io/reference/api-overview
+        $this->options = $options;
         $this->base_url = 'https://api.opensea.io/api';
         $this->limit = 50;
         $this->consoleOutput = new ConsoleOutput();
