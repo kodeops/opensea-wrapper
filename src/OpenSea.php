@@ -159,7 +159,7 @@ class OpenSea
         $output = new ConsoleOutput();
 
         if (Event::where('event_id', $openSeaEvent['id'])->first()) {
-            $output->comment("Skipping event #{$openSeaEvent['id']}");
+            $output->comment("Skipping OpenSea event #{$openSeaEvent['id']}");
             return;
         }
 
@@ -175,7 +175,7 @@ class OpenSea
 
         OpenSeaEventAdded::dispatch($event);
 
-        $output->comment("Adding event #{$event->id}");
+        $output->comment("Added OpenSea event #{$event->id}");
 
         return $event;
     }
