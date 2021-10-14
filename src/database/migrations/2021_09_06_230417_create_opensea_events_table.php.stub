@@ -1,0 +1,36 @@
+<?php
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+class CreateOpenseaEventsTable extends Migration
+{
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
+    {
+        Schema::create('opensea_events', function (Blueprint $table) {
+            $table->id();
+            $table->string('asset_contract_address', 42)->index();
+            $table->unsignedBigInteger('token_id')->index()->nullable();
+            $table->unsignedBigInteger('event_id')->unique()->index();
+            $table->string('event_type', 25)->index();
+            $table->json('raw');
+            $table->timestamp('created_at')->index();
+            $table->timestamp('event_at')->index();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        Schema::dropIfExists('opensea_events');
+    }
+}
