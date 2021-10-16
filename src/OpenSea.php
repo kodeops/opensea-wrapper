@@ -53,7 +53,7 @@ class OpenSea
         return $this->requestUsingTokenIds('/v1/assets', $params);
     }
 
-    public function events($params, $crawl = false)
+    public function events($params, $crawl = false, $sleep = 0)
     {
         if (! $crawl) {
             if (! isset($params['limit'])) {
@@ -64,11 +64,11 @@ class OpenSea
         }
         switch ($crawl) {
             case 'all':
-                return $this->crawlAll('events', $params);
+                return $this->crawlAll('events', $params, $sleep);
             break;
             
             default:
-                return $this->crawlWithMaxRequests('events', $params, $crawl);
+                return $this->crawlWithMaxRequests('events', $params, $crawl, $sleep);
             break;
         }
     }
@@ -186,14 +186,14 @@ class OpenSea
         }
     }
 
-    public function crawlWithMaxRequests($endpoint, $params, $requests)
+    public function crawlWithMaxRequests($endpoint, $params, $requests, $sleep)
     {
-        return $this->crawl($endpoint, $params, $requests, 0);
+        return $this->crawl($endpoint, $params, $requests, $sleep);
     }
 
-    public function crawlAll($endpoint, $params)
+    public function crawlAll($endpoint, $params, $sleep = 0)
     {
-        return $this->crawl($endpoint, $params, 9999999999999, 0);
+        return $this->crawl($endpoint, $params, 9999999999999, $sleep);
     }
 
     public function crawl($endpoint, $params, $max_requests = 5, $sleep = 0)
