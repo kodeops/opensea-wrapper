@@ -5,6 +5,8 @@ use Illuminate\Support\Facades\Http;
 use kodeops\OpenSeaWrapper\Helpers\ConsoleOutput;
 use kodeops\OpenSeaWrapper\Models\Event;
 use kodeops\OpenSeaWrapper\Events\OpenSeaEventAdded;
+use kodeops\OpenSeaWrapper\Exceptions\OpenSeaWrapperException;
+use kodeops\OpenSeaWrapper\Exceptions\OpenSeaWrapperRequestException;
 
 class OpenSea
 {
@@ -76,10 +78,34 @@ class OpenSea
     public function request($endpoint, $params = [], $query = false)
     {
         $query = $query ? $query : http_build_query($params);
+        $query .= "&format=json";
         $url = "{$this->base_url}{$endpoint}?{$query}";
-        $response = Http::withHeaders($this->getRequestHeaders())->get($url)->throw();
-        $results = $response->json();
 
+        if (env('OPENSEA_WRAPPER_PROXY')) {
+            if (! env('OPENSEA_WRAPPER_PROXY_TOKEN')) {
+                throw new OpenSeaWrapperException("OpenSea wrapper is missing “OPENSEA_WRAPPER_PROXY_TOKEN” environment setting");
+            }
+
+            $url = "https://"
+                . env('OPENSEA_WRAPPER_PROXY_ENDPOINT')
+                . "/?token="
+                . env('OPENSEA_WRAPPER_PROXY_TOKEN')
+                . "&url=" . urlencode($url);
+        }
+
+        $response = Http::withHeaders($this->getRequestHeaders())->get($url);
+
+        if ($response->failed()) {
+            if (config('app.debug')) {
+                \Facade\Ignition\Facades\Flare::context('url', $url);
+                \Facade\Ignition\Facades\Flare::context('endpoint', $endpoint);
+                \Facade\Ignition\Facades\Flare::context('params', $params);
+            }
+
+            throw new OpenSeaWrapperRequestException("OpenSea request failed: " . $response->getBody());
+        }
+
+        $results = $response->json();
         if (in_array('order_by_desc', $this->options)) {
             $results[key($results)] = collect($results[key($results)])->reverse()->toArray();
         }
