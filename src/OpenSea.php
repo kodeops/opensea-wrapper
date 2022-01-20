@@ -152,11 +152,11 @@ class OpenSea
 
     private function getRequestHeaders()
     {
-        if (app()->environment('production') OR env('OPENSEA_API_KEY_ACTIVE')) {
-            return ['X-API-KEY' => env('OPENSEA_API_KEY')];
+        if (! env('OPENSEA_API_KEY')) {
+            throw new OpenSeaWrapperRequestException("Missing OPENSEA_API_KEY");
         }
-
-        return [];
+        
+        return ['X-API-KEY' => env('OPENSEA_API_KEY')];
     }
 
     private function requestUsingTokenIds($endpoint, $params)
