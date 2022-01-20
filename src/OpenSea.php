@@ -19,7 +19,7 @@ class OpenSea
     {
         // https://docs.opensea.io/reference/api-overview
         $this->options = $options;
-        $this->base_url = 'https://api.opensea.io/api';
+        $this->base_url = 'https://api.opensea.io';
         $this->limit = 50;
         $this->consoleOutput = new ConsoleOutput();
     }
@@ -36,7 +36,7 @@ class OpenSea
 
     public function asset($asset_contract_address, $token_id)
     {
-        return $this->request("/v1/asset/{$asset_contract_address}/{$token_id}");
+        return $this->request("/api/v1/asset/{$asset_contract_address}/{$token_id}");
     }
 
     public function assets($params)
@@ -44,7 +44,15 @@ class OpenSea
         if (! isset($params['limit'])) {
             $params['limit'] = $this->limit;
         }
-        return $this->requestUsingTokenIds('/v1/assets', $params);
+        return $this->requestUsingTokenIds('/api/v1/assets', $params);
+    }
+
+    public function orders($params)
+    {
+        if (! isset($params['limit'])) {
+            $params['limit'] = $this->limit;
+        }
+        return $this->requestUsingTokenIds('/wyvern/v1/orders', $params);
     }
 
     public function bundles($params)
@@ -52,7 +60,7 @@ class OpenSea
         if (! isset($params['limit'])) {
             $params['limit'] = $this->limit;
         }
-        return $this->requestUsingTokenIds('/v1/assets', $params);
+        return $this->requestUsingTokenIds('/api/v1/assets', $params);
     }
 
     public function events($params, $crawl = false, $sleep = 0)
@@ -62,7 +70,7 @@ class OpenSea
                 $params['limit'] = $this->limit;
             }
 
-            return $this->request('/v1/events', $params);
+            return $this->request('/api/v1/events', $params);
         }
         switch ($crawl) {
             case 'all':
