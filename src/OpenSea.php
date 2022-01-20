@@ -103,6 +103,16 @@ class OpenSea
 
         $response = Http::withHeaders($this->getRequestHeaders())->get($url);
 
+        if (
+            ($response->status() == 200)
+            AND
+            (! $response->json())
+        ) {
+            if (str_contains($response->body(), 'Access denied')) {
+                throw new OpenSeaWrapperRequestException("OpenSea request failed: Access denied");
+            }
+        }
+
         if ($response->failed()) {
             if (config('app.debug')) {
                 \Facade\Ignition\Facades\Flare::context('url', $url);
@@ -114,12 +124,17 @@ class OpenSea
         }
 
         $results = $response->json();
+        if (is_null($results)) {
+            throw new OpenSeaWrapperRequestException("OpenSea null response");
+        }
+
         if (in_array('order_by_desc', $this->options)) {
             $results[key($results)] = collect($results[key($results)])->reverse()->toArray();
         }
 
         // Remove the primary key that is included in all OpenSea responses
         // e.g.: <asset_events>, <assets>, etc.
+
         $results = $results[key($results)];
 
         if (
@@ -137,7 +152,7 @@ class OpenSea
 
     private function getRequestHeaders()
     {
-        if (app()->environment('production')) {
+        if (app()->environment('production') OR env('OPENSEA_API_KEY_ACTIVE')) {
             return ['X-API-KEY' => env('OPENSEA_API_KEY')];
         }
 
