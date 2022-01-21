@@ -140,7 +140,7 @@ class OpenSea
 
         if (
             // Should we persist the results on database?
-            in_array(explode('/', $endpoint)[2], $this->persistEndpoints())
+            in_array($endpoint, $this->persistEndpoints())
             AND
             // There are results in the response?
             count($results)
