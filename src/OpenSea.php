@@ -129,14 +129,16 @@ class OpenSea
             throw new OpenSeaWrapperRequestException("OpenSea null response");
         }
 
+        $key = $this->getResponseKey($endpoint, key($results));
+
         if (in_array('order_by_desc', $this->options)) {
-            $results[key($results)] = collect($results[key($results)])->reverse()->toArray();
+            $results[$key] = collect($results[$key])->reverse()->toArray();
         }
 
         // Remove the primary key that is included in all OpenSea responses
         // e.g.: <asset_events>, <assets>, etc.
 
-        $results = $results[key($results)];
+        $results = $results[$key];
 
         if (
             // Should we persist the results on database?
@@ -181,7 +183,8 @@ class OpenSea
                 $params,
                 self::convertTokenIdsToHttpQueryBuild($limitedParams)
             )->json();
-            $mergedResponses = array_merge($mergedResponses, $response[key($response)]);
+            
+            $mergedResponses = array_merge($mergedResponses, $response[$this->getResponseKey($endpoint, key($response))]);
         }
 
         return $mergedResponses;
@@ -212,12 +215,11 @@ class OpenSea
             $output->comment("Skipping OpenSea event #{$openSeaEvent['id']}");
             return;
         }
-
         $event = Event::create([
             'asset_contract_address' => is_null($openSeaEvent['asset']) ? null : $openSeaEvent['asset']['asset_contract']['address'],
             'token_id' => is_null($openSeaEvent['asset']) ? null : $openSeaEvent['asset']['token_id'],
             'event_id' => $openSeaEvent['id'],
-            'event_type' => $openSeaEvent['event_type'],
+            'event_type' => $openSeaEvent['order_hash'] ? 'order' : $openSeaEvent['event_type'],
             'raw' => $openSeaEvent,
             'created_at' => now(),
             'event_at' => $openSeaEvent['created_date'],
@@ -259,17 +261,15 @@ class OpenSea
             $response = $this->{$endpoint}(array_merge($params, ['offset' => $offset]))
                 ->json();
 
-            $key = key($response);
+            $key = $this->getResponseKey($endpoint, key($response));
 
-            if (empty($response[key($response)])) {
+            if (empty($response[$key])) {
                 break;
             }
 
-            $this->consoleOutput->comment("Results #" . count($response[key($response)]));
+            $combinedResponses = array_merge($combinedResponses, $response[$key]);
 
-            $combinedResponses = array_merge($combinedResponses, $response[key($response)]);
-
-            if (count($response[key($response)]) < $this->limit) {
+            if (count($response[$key]) < $this->limit) {
                 break;
             }
 
@@ -280,5 +280,18 @@ class OpenSea
 
         // Mantain the same structure that the original call has
         return [$key => $combinedResponses];
+    }
+
+    private function getResponseKey($endpoint, $key)
+    {
+        switch ($endpoint) {
+            case '/wyvern/v1/orders':
+                return 'orders';
+            break;
+
+            default:
+                return $key;
+            break;
+        }
     }
 }
