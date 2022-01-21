@@ -265,6 +265,8 @@ class OpenSea
                 break;
             }
 
+            $this->consoleOutput->comment("Results #" . count($response[key($response)]));
+
             $combinedResponses = array_merge($combinedResponses, $response[key($response)]);
 
             if (count($response[key($response)]) < $this->limit) {
