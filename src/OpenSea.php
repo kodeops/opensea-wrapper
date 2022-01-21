@@ -109,7 +109,8 @@ class OpenSea
             (! $response->json())
         ) {
             if (str_contains($response->body(), 'Access denied')) {
-                throw new OpenSeaWrapperRequestException("OpenSea request failed: Access denied");
+                $proxy_mode = env('OPENSEA_WRAPPER_PROXY') ? 'Proxy: ON' : 'Proxy: OFF';
+                throw new OpenSeaWrapperRequestException("OpenSea request failed: Access denied ({$proxy_mode})");
             }
         }
 
