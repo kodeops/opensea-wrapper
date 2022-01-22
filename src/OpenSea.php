@@ -219,7 +219,7 @@ class OpenSea
             'asset_contract_address' => is_null($openSeaEvent['asset']) ? null : $openSeaEvent['asset']['asset_contract']['address'],
             'token_id' => is_null($openSeaEvent['asset']) ? null : $openSeaEvent['asset']['token_id'],
             'event_id' => $openSeaEvent['id'],
-            'event_type' => $openSeaEvent['order_hash'] ? 'order' : $openSeaEvent['event_type'],
+            'event_type' => isset($openSeaEvent['order_hash']) ? 'order' : $openSeaEvent['event_type'],
             'raw' => $openSeaEvent,
             'created_at' => now(),
             'event_at' => $openSeaEvent['created_date'],
