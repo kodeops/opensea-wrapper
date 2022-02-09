@@ -10,6 +10,8 @@ use kodeops\OpenSeaWrapper\Exceptions\OpenSeaWrapperRequestException;
 
 class OpenSea
 {
+    // https://docs.opensea.io/reference/api-overview
+
     protected $base_url;
     protected $limit;
     protected $options;
