@@ -49,12 +49,12 @@ class OpenSea
         return $this->requestUsingTokenIds('/api/v1/assets', $params);
     }
 
-    public function orders($params)
+    public function orders($params, $sleep = 0)
     {
         if (! isset($params['limit'])) {
             $params['limit'] = $this->limit;
         }
-        return $this->requestUsingTokenIds('/wyvern/v1/orders', $params);
+        return $this->requestUsingTokenIds('/wyvern/v1/orders', $params, $sleep);
     }
 
     public function bundles($params)
@@ -164,7 +164,7 @@ class OpenSea
         return ['X-API-KEY' => env('OPENSEA_API_KEY')];
     }
 
-    private function requestUsingTokenIds($endpoint, $params)
+    private function requestUsingTokenIds($endpoint, $params, $sleep = false)
     {
         // Force limit to the maximum allowed
         $params['limit'] = $this->limit;
@@ -187,6 +187,11 @@ class OpenSea
             )->json();
             
             $mergedResponses = array_merge($mergedResponses, $response[$this->getResponseKey($endpoint, key($response))]);
+
+            if ($sleep) {
+                $this->consoleOutput->comment("Sleeping {$sleep} seconds...");
+                sleep($sleep);
+            }
         }
 
         return $mergedResponses;
