@@ -24,4 +24,13 @@ class ConsoleOutput extends SConsoleOutput
     {
         return $this->writeln("<warn>{$message}</warn>");
     }
+
+    public function debug($message)
+    {
+        if (! env('APP_DEBUG')) {
+            return;
+        }
+        
+        return $this->writeln("<comment>{$message}</comment>");
+    }
 }

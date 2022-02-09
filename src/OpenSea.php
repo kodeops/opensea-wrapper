@@ -91,6 +91,8 @@ class OpenSea
         $query .= "&format=json";
         $url = "{$this->base_url}{$endpoint}?{$query}";
 
+        $this->consoleOutput->debug("{$url}");
+
         if (env('OPENSEA_WRAPPER_PROXY')) {
             if (! env('OPENSEA_WRAPPER_PROXY_TOKEN')) {
                 throw new OpenSeaWrapperException("OpenSea wrapper is missing “OPENSEA_WRAPPER_PROXY_TOKEN” environment setting");
@@ -189,7 +191,7 @@ class OpenSea
             $mergedResponses = array_merge($mergedResponses, $response[$this->getResponseKey($endpoint, key($response))]);
 
             if ($sleep) {
-                $this->consoleOutput->comment("Sleeping {$sleep} seconds...");
+                $this->consoleOutput->debug("Sleeping {$sleep} seconds...");
                 sleep($sleep);
             }
         }
