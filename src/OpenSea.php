@@ -188,6 +188,10 @@ class OpenSea
                 self::convertTokenIdsToHttpQueryBuild($limitedParams)
             )->json();
             
+            if (! $response[$this->getResponseKey($endpoint, key($response))]) {
+                throw new OpenSeaWrapperRequestException("Response key is null");
+            }
+
             $mergedResponses = array_merge($mergedResponses, $response[$this->getResponseKey($endpoint, key($response))]);
 
             if ($sleep) {
@@ -296,6 +300,10 @@ class OpenSea
         switch ($endpoint) {
             case '/wyvern/v1/orders':
                 return 'orders';
+            break;
+
+            case '/api/v1/assets':
+                return 'assets';
             break;
 
             default:
