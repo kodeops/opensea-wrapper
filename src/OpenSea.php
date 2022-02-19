@@ -306,6 +306,10 @@ class OpenSea
                 return 'assets';
             break;
 
+            case '/api/v1/events':
+                return 'asset_events';
+            break;
+
             default:
                 return $key;
             break;
