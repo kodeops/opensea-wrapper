@@ -154,7 +154,7 @@ class OpenSea
             self::addEvents($results);
         }
 
-        return $response->json();
+        return $results;
     }
 
     private function getRequestHeaders()
@@ -186,7 +186,7 @@ class OpenSea
                 $endpoint, 
                 $params,
                 self::convertTokenIdsToHttpQueryBuild($limitedParams)
-            )->json();
+            );
             
             $key = $this->getResponseKey($endpoint, key($response));
 
@@ -273,8 +273,7 @@ class OpenSea
             $this->consoleOutput->comment("OpenSea “{$endpoint}” Request #" . ($requests_count + 1));
             
             $offset = ($requests_count * $this->limit);
-            $response = $this->{$endpoint}(array_merge($params, ['offset' => $offset]))
-                ->json();
+            $response = $this->{$endpoint}(array_merge($params, ['offset' => $offset]));
 
             $key = $this->getResponseKey($endpoint, key($response));
 
