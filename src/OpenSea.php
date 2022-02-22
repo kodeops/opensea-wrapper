@@ -136,6 +136,10 @@ class OpenSea
 
         $key = $this->getResponseKey($endpoint, key($results));
 
+        if ($key AND ! isset($response[$key])) {
+            throw new OpenSeaWrapperRequestException("Response key ({$key}) is null");
+        }
+
         // Remove the primary key that is included in all OpenSea responses
         // e.g.: <asset_events>, <assets>, etc.
         $results = $key ? $results[$key] : $results;
@@ -188,13 +192,7 @@ class OpenSea
                 self::convertTokenIdsToHttpQueryBuild($limitedParams)
             );
             
-            $key = $this->getResponseKey($endpoint, key($response));
-
-            if ($key AND ! isset($response[$key])) {
-                throw new OpenSeaWrapperRequestException("Response key ({$key}) is null");
-            }
-
-            $mergedResponses = array_merge($mergedResponses, $key ? $response[$key] : $response);
+            $mergedResponses = array_merge($mergedResponses, $response);
 
             if ($sleep) {
                 $this->consoleOutput->debug("Sleeping {$sleep} seconds...");
@@ -298,7 +296,7 @@ class OpenSea
 
     private function getResponseKey($endpoint, $key)
     {
-        if (Str::contains($endpoint, '/api/v1/asset')) {
+        if (Str::contains($endpoint, '/api/v1/asset/')) {
             $endpoint = '/api/v1/asset';
         }
         
@@ -320,7 +318,7 @@ class OpenSea
             break;
 
             default:
-                throw new CVParcelsException("Undefined key endpoint: {$endpoint}");
+                throw new OpenSeaWrapperException("Undefined key endpoint: {$endpoint}");
             break;
         }
     }
