@@ -272,14 +272,7 @@ class OpenSea
             
             $offset = ($requests_count * $this->limit);
             $response = $this->{$endpoint}(array_merge($params, ['offset' => $offset]));
-
-            $key = $this->getResponseKey($endpoint, key($response));
-
-            if (empty($response[$key])) {
-                break;
-            }
-
-            $combinedResponses = array_merge($combinedResponses, $response[$key]);
+            $combinedResponses = array_merge($combinedResponses, $response);
 
             if (count($response[$key]) < $this->limit) {
                 break;
