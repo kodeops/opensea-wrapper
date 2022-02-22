@@ -7,6 +7,7 @@ use kodeops\OpenSeaWrapper\Models\Event;
 use kodeops\OpenSeaWrapper\Events\OpenSeaEventAdded;
 use kodeops\OpenSeaWrapper\Exceptions\OpenSeaWrapperException;
 use kodeops\OpenSeaWrapper\Exceptions\OpenSeaWrapperRequestException;
+use Illuminate\Support\Str;
 
 class OpenSea
 {
@@ -135,14 +136,13 @@ class OpenSea
 
         $key = $this->getResponseKey($endpoint, key($results));
 
-        if (in_array('order_by_desc', $this->options)) {
-            $results[$key] = collect($results[$key])->reverse()->toArray();
-        }
-
         // Remove the primary key that is included in all OpenSea responses
         // e.g.: <asset_events>, <assets>, etc.
+        $results = $key ? $results[$key] : $results;
 
-        $results = $results[$key];
+        if (in_array('order_by_desc', $this->options)) {
+            $results = collect($results)->reverse()->toArray();
+        }
 
         if (
             // Should we persist the results on database?
@@ -154,7 +154,7 @@ class OpenSea
             self::addEvents($results);
         }
 
-        return $response;
+        return $response->json();
     }
 
     private function getRequestHeaders()
@@ -188,11 +188,13 @@ class OpenSea
                 self::convertTokenIdsToHttpQueryBuild($limitedParams)
             )->json();
             
-            if (! $response[$this->getResponseKey($endpoint, key($response))]) {
-                throw new OpenSeaWrapperRequestException("Response key is null");
+            $key = $this->getResponseKey($endpoint, key($response));
+
+            if ($key AND ! isset($response[$key])) {
+                throw new OpenSeaWrapperRequestException("Response key ({$key}) is null");
             }
 
-            $mergedResponses = array_merge($mergedResponses, $response[$this->getResponseKey($endpoint, key($response))]);
+            $mergedResponses = array_merge($mergedResponses, $key ? $response[$key] : $response);
 
             if ($sleep) {
                 $this->consoleOutput->debug("Sleeping {$sleep} seconds...");
@@ -297,6 +299,10 @@ class OpenSea
 
     private function getResponseKey($endpoint, $key)
     {
+        if (Str::contains($endpoint, '/api/v1/asset')) {
+            $endpoint = '/api/v1/asset';
+        }
+        
         switch ($endpoint) {
             case '/wyvern/v1/orders':
                 return 'orders';
@@ -306,8 +312,16 @@ class OpenSea
                 return 'assets';
             break;
 
+            case '/api/v1/asset':
+                return;
+            break;
+
+            case '/api/v1/events':
+                return 'asset_events';
+            break;
+
             default:
-                return $key;
+                throw new CVParcelsException("Undefined key endpoint: {$endpoint}");
             break;
         }
     }
