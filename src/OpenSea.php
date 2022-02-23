@@ -42,6 +42,11 @@ class OpenSea
         return $this->request("/api/v1/asset/{$asset_contract_address}/{$token_id}");
     }
 
+    public function collectionStats($collection_slug)
+    {
+        return $this->request("/api/v1/collection/{$collection_slug}/stats");
+    }
+
     public function assets($params)
     {
         if (! isset($params['limit'])) {
@@ -291,6 +296,8 @@ class OpenSea
     {
         if (Str::contains($endpoint, '/api/v1/asset/')) {
             $endpoint = '/api/v1/asset';
+        } else if (Str::contains($endpoint, '/api/v1/collection/')) {
+            $endpoint = '/api/v1/collection';
         }
         
         switch ($endpoint) {
@@ -308,6 +315,10 @@ class OpenSea
 
             case '/api/v1/events':
                 return 'asset_events';
+            break;
+
+            case '/api/v1/collection':
+                return 'stats';
             break;
 
             default:
