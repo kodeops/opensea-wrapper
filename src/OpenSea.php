@@ -279,7 +279,7 @@ class OpenSea
             $response = $this->{$endpoint}(array_merge($params, ['offset' => $offset]));
             $combinedResponses = array_merge($combinedResponses, $response);
 
-            if (count($response[$key]) < $this->limit) {
+            if (count($response) < $this->limit) {
                 break;
             }
 
@@ -289,7 +289,7 @@ class OpenSea
         }
 
         // Mantain the same structure that the original call has
-        return [$key => $combinedResponses];
+        return $combinedResponses;
     }
 
     private function getResponseKey($endpoint, $key)
