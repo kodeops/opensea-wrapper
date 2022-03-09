@@ -17,6 +17,7 @@ class OpenSea
     protected $limit;
     protected $options;
     protected $consoleOutput;
+    protected $cursor;
 
     public function __construct($options = [])
     {
@@ -25,6 +26,10 @@ class OpenSea
         $this->base_url = 'https://api.opensea.io';
         $this->limit = 50;
         $this->consoleOutput = new ConsoleOutput();
+        $this->cursor = [
+            'next' => null,
+            'previous' => null,
+        ];
     }
 
     private function persistEndpoints()
@@ -73,6 +78,17 @@ class OpenSea
 
     public function events($params, $crawl = false, $sleep = 0)
     {
+        $occurred_after = null;
+        if (isset($params['occurred_after_value'])) {
+            if (! isset($params['occurred_after_key'])) {
+                throw new OpenSeaWrapperException("Occurred after key not found");
+            }
+            $occurred_after['key'] = $params['occurred_after_key'];
+            $occurred_after['value'] = $params['occurred_after_value'];
+            unset($params['occurred_after_key']);
+            unset($params['occurred_after_value']);
+        }
+
         if (! $crawl) {
             if (! isset($params['limit'])) {
                 $params['limit'] = $this->limit;
@@ -80,18 +96,19 @@ class OpenSea
 
             return $this->request('/api/v1/events', $params);
         }
+
         switch ($crawl) {
             case 'all':
-                return $this->crawlAll('events', $params, $sleep);
+                return $this->crawlAll('events', $params, $sleep, $occurred_after);
             break;
             
             default:
-                return $this->crawlWithMaxRequests('events', $params, $crawl, $sleep);
+                return $this->crawlWithMaxRequests('events', $params, $crawl, $sleep, $occurred_after);
             break;
         }
     }
 
-    public function request($endpoint, $params = [], $query = false)
+    public function request($endpoint, $params = [], $query = false, $raw = false)
     {
         $query = $query ? $query : http_build_query($params);
         $query .= "&format=json";
@@ -112,7 +129,6 @@ class OpenSea
         }
 
         $response = Http::withHeaders($this->getRequestHeaders())->get($url);
-
         if (
             ($response->status() == 200)
             AND
@@ -139,8 +155,11 @@ class OpenSea
             throw new OpenSeaWrapperRequestException("OpenSea null response");
         }
 
+        // Because of the change of the offset type to a cursor type pagination
+        // we will need to preserve cursors.
+        $raw_results = $results;
+        
         $key = $this->getResponseKey($endpoint, key($results));
-
         if ($key AND ! isset($response[$key])) {
             throw new OpenSeaWrapperRequestException("Response key ({$key}) is null");
         }
@@ -163,7 +182,10 @@ class OpenSea
             self::addEvents($results);
         }
 
-        return $results;
+        $this->cursor['next'] = $raw_results['next'];
+        $this->cursor['previous'] = $raw_results['previous'];
+
+        return $raw ? $raw_results : $results;
     }
 
     private function getRequestHeaders()
@@ -258,16 +280,18 @@ class OpenSea
 
     public function crawlWithMaxRequests($endpoint, $params, $requests, $sleep)
     {
-        return $this->crawl($endpoint, $params, $requests, $sleep);
+        return $this->crawl($endpoint, $params, $requests, $sleep, $ocurred_after);
     }
 
-    public function crawlAll($endpoint, $params, $sleep = 0)
+    public function crawlAll($endpoint, $params, $sleep = 0, $ocurred_after = null)
     {
-        return $this->crawl($endpoint, $params, 9999999999999, $sleep);
+        return $this->crawl($endpoint, $params, 9999999999999, $sleep, $ocurred_after);
     }
 
-    public function crawl($endpoint, $params, $max_requests = 5, $sleep = 0)
+    public function crawl($endpoint, $params, $max_requests = 5, $sleep = 0, $occurred_after)
     {
+        $data = [];
+
         $requests_count = 0;
         $combinedResponses = [];
         // Whatever limit has been set in params, force the maximum allowed by OpenSea API
@@ -275,16 +299,30 @@ class OpenSea
         while ($requests_count <= $max_requests) {
             $this->consoleOutput->comment("OpenSea “{$endpoint}” Request #" . ($requests_count + 1));
             
-            $offset = ($requests_count * $this->limit);
-            $response = $this->{$endpoint}(array_merge($params, ['offset' => $offset]));
-            $combinedResponses = array_merge($combinedResponses, $response);
+            $response = $this->{$endpoint}(array_merge($params, ['cursor' => $this->cursor['next']]));
+            foreach ($response as $r) {
+                // If the event is equal than $occurred_after stop crawling
+                if ($r[$occurred_after['key']] <= $occurred_after['value']) {
+                    $this->consoleOutput->info("Found stopping point at {$occurred_after['value']}");
+                    return $data;
+                }
+                array_push($data, $r);
+            }
 
+            // Stop if API returns fewer results than limit
             if (count($response) < $this->limit) {
                 break;
             }
 
+            $this->consoleOutput->comment("Cursor “{$endpoint}” Request {$this->cursor['next']}");
+
+            // Stop if API returns a null next cursor
+            if (is_null($this->cursor['next'])) {
+                break;
+            }
+
             sleep($sleep);
-            
+
             $requests_count++;
         }
 
