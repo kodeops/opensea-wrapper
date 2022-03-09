@@ -275,6 +275,10 @@ class OpenSea
     }
 
     public static function addEvents($openSeaEvents) {
+        $eventExists = Event::where('event_id', $openSeaEvents[0]['id'])->first();
+        if ($eventExists) {
+            return;
+        }
         foreach ($openSeaEvents as $openSeaEvent) {
             self::addEvent($openSeaEvent);
         }
