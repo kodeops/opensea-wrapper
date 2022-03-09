@@ -182,8 +182,10 @@ class OpenSea
             self::addEvents($results);
         }
 
-        $this->cursor['next'] = $raw_results['next'];
-        $this->cursor['previous'] = $raw_results['previous'];
+        if (isset($raw_results['next'])) {
+            $this->cursor['next'] = $raw_results['next'];
+            $this->cursor['previous'] = $raw_results['previous'];
+        }
 
         return $raw ? $raw_results : $results;
     }
