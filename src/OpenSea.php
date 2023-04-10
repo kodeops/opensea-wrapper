@@ -141,12 +141,6 @@ class OpenSea
         }
 
         if ($response->failed()) {
-            if (config('app.debug')) {
-                \Facade\Ignition\Facades\Flare::context('url', $url);
-                \Facade\Ignition\Facades\Flare::context('endpoint', $endpoint);
-                \Facade\Ignition\Facades\Flare::context('params', $params);
-            }
-
             throw new OpenSeaWrapperRequestException("OpenSea request failed: " . $response->getBody());
         }
 
