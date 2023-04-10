@@ -291,9 +291,7 @@ class OpenSea
     public function crawl($endpoint, $params, $max_requests = 5, $sleep = 0, $occurred_after)
     {
         $data = [];
-
         $requests_count = 0;
-        $combinedResponses = [];
         // Whatever limit has been set in params, force the maximum allowed by OpenSea API
         $params['limit'] = $this->limit;
         while ($requests_count <= $max_requests) {
@@ -327,7 +325,7 @@ class OpenSea
         }
 
         // Mantain the same structure that the original call has
-        return $combinedResponses;
+        return $data;
     }
 
     private function getResponseKey($endpoint, $key)
